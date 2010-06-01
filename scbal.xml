@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<Interface xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../Interface.xsd">
+    <Scripts>
+        <Script file="scbal.lua"/>
+    </Scripts>
+    <Windows>
+        <Window name="scbal" inherits="EA_Window_Default" layer="background" movable="true" savesettings="true">
+            <Size>
+                <AbsPoint x="80" y="60"/>
+            </Size>
+            <Anchors>
+                <Anchor point="topleft" relativePoint="topleft" relativeTo="EA_Window_OverheadMapFilterMenuButton">
+                    <AbsPoint x="-85" y="0"/>
+                </Anchor>
+            </Anchors>
+            <Windows>
+                <Window name="$parentBackground" inherits="EA_Window_DefaultBackgroundFrame">
+                    <Anchors>
+                        <Anchor point="topleft" relativePoint="topleft" relativeTo="$parent"/>
+                        <Anchor point="bottomright" relativePoint="bottomright" relativeTo="$parent"/>
+                    </Anchors>
+                </Window>
+                <Label name="$parentUs" font="font_default_text" maxchars="8" textalign="center" autoresize="false" wordwrap="false" handleinput="false">
+                    <Size>
+                        <AbsPoint x="135" y="24" />
+                    </Size>
+                    <Anchors>
+                        <Anchor point="top" relativePoint="top" relativeTo="$parent">
+                            <AbsPoint x="" y="5"/>
+                        </Anchor>
+                    </Anchors>
+                    <Color r="0" g="255" b="0" a="255"/>
+                </Label>
+                <Label name="$parentThem" font="font_default_text" maxchars="8" textalign="center" autoresize="false" wordwrap="false" handleinput="false">
+                    <Size>
+                        <AbsPoint x="135" y="24" />
+                    </Size>
+                    <Anchors>
+                        <Anchor point="top" relativePoint="top" relativeTo="$parent">
+                            <AbsPoint x="" y="29"/>
+                        </Anchor>
+                    </Anchors>
+                    <Color r="255" g="0" b="0" a="255"/>
+                </Label>
+            </Windows>
+        </Window>
+    </Windows>
+</Interface>
