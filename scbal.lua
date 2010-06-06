@@ -15,6 +15,24 @@ function scbal.initialize()
     scbal.timeBetweenUpdates = 2
     scbal.test = false
     
+    scbal.orderHealerCareers = {
+        GetStringFromTable("CareerLinesMale",GameDefs.CAREERID_RUNE_PRIEST),
+        GetStringFromTable("CareerLinesMale",GameDefs.CAREERID_WARRIOR_PRIEST),
+        GetStringFromTable("CareerLinesMale",GameDefs.CAREERID_ARCHMAGE),
+        GetStringFromTable("CareerLinesFemale",GameDefs.CAREERID_RUNE_PRIEST),
+        GetStringFromTable("CareerLinesFemale",GameDefs.CAREERID_WARRIOR_PRIEST),
+        GetStringFromTable("CareerLinesFemale",GameDefs.CAREERID_ARCHMAGE)
+    }
+
+    scbal.destroHealerCareers = {
+        GetStringFromTable("CareerLinesMale",GameDefs.CAREERID_SHAMAN),
+        GetStringFromTable("CareerLinesMale",GameDefs.CAREERID_ZEALOT),
+        GetStringFromTable("CareerLinesMale",GameDefs.CAREERID_BLOOD_PRIEST),
+        GetStringFromTable("CareerLinesFemale",GameDefs.CAREERID_SHAMAN),
+        GetStringFromTable("CareerLinesFemale",GameDefs.CAREERID_ZEALOT),
+        GetStringFromTable("CareerLinesFemale",GameDefs.CAREERID_BLOOD_PRIEST)
+    }
+    
     CreateWindow("scbal", true)
     LayoutEditor.RegisterWindow( "scbal" , L"Scenario Balance" , L"Scenario Balance Window",
                                false , false , true , nil )
@@ -99,17 +117,22 @@ function scbal.updateCounts()
         for key, value in ipairs(players) do
             if ( value.realm == GameData.Realm.ORDER ) then
                 scbal.orderTotal = scbal.orderTotal + 1
+                local incr = 1
+                for i, h in pairs(scbal.orderHealerCareers) do
+                    if ( WStringsCompareIgnoreGrammer(value.career, h ) == 0 ) then
+                        scbal.orderHealers = scbal.orderHealers + incr
+                        incr = 0
+                    end
+                end
             else
                 scbal.destroTotal = scbal.destroTotal + 1
-            end
-            if ( WStringsCompareIgnoreGrammer(value.career, L"Warrior Priest") == 0
-             or WStringsCompareIgnoreGrammer(value.career, L"Archmage") == 0
-             or WStringsCompareIgnoreGrammer(value.career, L"Runepriest") == 0 ) then
-                scbal.orderHealers = scbal.orderHealers + 1
-            elseif ( WStringsCompareIgnoreGrammer(value.career, L"Disciple of Khaine") == 0
-             or WStringsCompareIgnoreGrammer(value.career, L"Shaman") == 0
-             or WStringsCompareIgnoreGrammer(value.career, L"Zealot") == 0 ) then
-                scbal.destroHealers = scbal.destroHealers + 1
+                local incr = 1
+                for i, h in pairs(scbal.destroHealerCareers) do
+                    if ( WStringsCompareIgnoreGrammer(value.career, h ) == 0 ) then
+                        scbal.destroHealers = scbal.destroHealers + incr
+                        incr = 0
+                    end
+                end
             end
         end
     end

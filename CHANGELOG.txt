@@ -1,3 +1,8 @@
+v1.1
+
+Career names no longer hard-coded. This *should* make it able to count
+healers correctly in non-English versions of the game.
+========================================================================
 v1.0
 
 Initial release.
