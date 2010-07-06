@@ -1,3 +1,7 @@
+v1.2.1
+
+Forgot to update the version number in the .mod file in 1.2.
+========================================================================
 v1.2
 
 Shows all four archetypes now, not just healers.
