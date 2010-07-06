@@ -1,8 +1,13 @@
-Puts up a small window with four numbers: how many healers and how many total
-players your side has in your scenario or city siege instance, and how many
-healers and total players the enemy has. Green numbers represent
-your side, and red represents the enemy. The first number is the count of
-healers, and the second is the total count.
+Puts up a small window that shows how many people are in your scenario or
+city instance, and how many of them are healers, RDPS, MDPS, and tanks,
+for each side. Green numbers are your side, red numbers are the enemy.
+
+For each side, the display is formatted like this:
+
+    12 = 4 + 2 + 1 + 5
+
+The first number is the total number of players. That's followed
+by the counts of healers, RDPS, MDPS, and tanks in that order.
 
 Usage is simple:
 
@@ -21,7 +26,8 @@ Usage is simple:
         Toggles test mode. In test mode, the window is shown even if you
         are not in a scenario. You can use this to move the window around
         so you don't have to waste time in your next scenario screwing
-        around with the window position.
+        around with the window position. There will be sample numbers
+        shown.
         
 The window is initially placed just to the left of the map filters button.
 You can drag it elsewhere if you wish, and the position will be saved.

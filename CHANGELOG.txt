@@ -1,3 +1,7 @@
+v1.2
+
+Shows all four archetypes now, not just healers.
+========================================================================
 v1.1
 
 Career names no longer hard-coded. This *should* make it able to count

@@ -6,32 +6,35 @@ function scbal.initialize()
         scbal.settings.wantShow = true
     end
     
-    scbal.orderTotal = 0
-    scbal.orderHealers = 0
-    scbal.destroTotal = 0
-    scbal.destroHealers = 0
+    scbal.orderCounts = {0,0,0,0,0}
+    scbal.destroCounts = {0,0,0,0,0}
+    
     scbal.nowShowing = false
     scbal.timeToUpdate = 0
     scbal.timeBetweenUpdates = 2
     scbal.test = false
     
-    scbal.orderHealerCareers = {
-        GetStringFromTable("CareerLinesMale",GameDefs.CAREERID_RUNE_PRIEST),
-        GetStringFromTable("CareerLinesMale",GameDefs.CAREERID_WARRIOR_PRIEST),
-        GetStringFromTable("CareerLinesMale",GameDefs.CAREERID_ARCHMAGE),
-        GetStringFromTable("CareerLinesFemale",GameDefs.CAREERID_RUNE_PRIEST),
-        GetStringFromTable("CareerLinesFemale",GameDefs.CAREERID_WARRIOR_PRIEST),
-        GetStringFromTable("CareerLinesFemale",GameDefs.CAREERID_ARCHMAGE)
+    scbal.careers = {
+        --order careers, tanks first, then mdps, then rdps, then healers
+        GameDefs.CAREERID_IRON_BREAKER, GameDefs.CAREERID_SWORDMASTER, GameDefs.CAREERID_KNIGHT,
+        GameDefs.CAREERID_SLAYER, GameDefs.CAREERID_WITCH_HUNTER, GameDefs.CAREERID_SEER,
+        GameDefs.CAREERID_ENGINEER, GameDefs.CAREERID_BRIGHT_WIZARD, GameDefs.CAREERID_SHADOW_WARRIOR,
+        GameDefs.CAREERID_WARRIOR_PRIEST, GameDefs.CAREERID_ARCHMAGE, GameDefs.CAREERID_RUNE_PRIEST,
+        --destruction careers, same order as order careers
+        GameDefs.CAREERID_BLACKORC, GameDefs.CAREERID_CHOSEN, GameDefs.CAREERID_SHADE,
+        GameDefs.CAREERID_ASSASSIN, GameDefs.CAREERID_CHOPPA, GameDefs.CAREERID_WARRIOR,
+        GameDefs.CAREERID_SQUIG_HERDER, GameDefs.CAREERID_MAGUS, GameDefs.CAREERID_SORCERER,
+        GameDefs.CAREERID_SHAMAN, GameDefs.CAREERID_ZEALOT, GameDefs.CAREERID_BLOOD_PRIEST
     }
-
-    scbal.destroHealerCareers = {
-        GetStringFromTable("CareerLinesMale",GameDefs.CAREERID_SHAMAN),
-        GetStringFromTable("CareerLinesMale",GameDefs.CAREERID_ZEALOT),
-        GetStringFromTable("CareerLinesMale",GameDefs.CAREERID_BLOOD_PRIEST),
-        GetStringFromTable("CareerLinesFemale",GameDefs.CAREERID_SHAMAN),
-        GetStringFromTable("CareerLinesFemale",GameDefs.CAREERID_ZEALOT),
-        GetStringFromTable("CareerLinesFemale",GameDefs.CAREERID_BLOOD_PRIEST)
-    }
+    scbal.num_careers = #scbal.careers
+    scbal.tank_end = 3   --index of last order tank in scbal.careers
+    scbal.mdps_end = 6
+    scbal.rdps_end = 9
+    scbal.healer_end = 12
+    for i=1,scbal.num_careers do
+        scbal.careers[i+scbal.num_careers] = GetStringFromTable("CareerLinesFemale", scbal.careers[i])
+        scbal.careers[i] = GetStringFromTable("CareerLinesMale", scbal.careers[i])
+    end
     
     CreateWindow("scbal", true)
     LayoutEditor.RegisterWindow( "scbal" , L"Scenario Balance" , L"Scenario Balance Window",
@@ -96,10 +99,8 @@ function scbal.tickTock(elapsed)
         if ( scbal.inScenario() ) then
             scbal.updateCounts()
         else
-            scbal.orderTotal = 0
-            scbal.orderHealers = 0
-            scbal.destroTotal = 0
-            scbal.destroHealers = 0
+            scbal.orderCounts = {0,0,0,0,0}
+            scbal.destroCounts = {0,0,0,0,0}
         end
         scbal.updateLabels()
         scbal.showOrHide()
@@ -109,38 +110,39 @@ end
 
 function scbal.updateCounts()
     local players = GameData.GetScenarioPlayers()
-    scbal.orderTotal = 0
-    scbal.orderHealers = 0
-    scbal.destroTotal = 0
-    scbal.destroHealers = 0
+    scbal.orderCounts = {0,0,0,0,0}
+    scbal.destroCounts = {0,0,0,0,0}
+
     if ( players ~= nil ) then
         for key, value in ipairs(players) do
+            local archetype = scbal.careerNameToArchetype(value.career)            
             if ( value.realm == GameData.Realm.ORDER ) then
-                scbal.orderTotal = scbal.orderTotal + 1
-                local incr = 1
-                for i, h in pairs(scbal.orderHealerCareers) do
-                    if ( WStringsCompareIgnoreGrammer(value.career, h ) == 0 ) then
-                        scbal.orderHealers = scbal.orderHealers + incr
-                        incr = 0
-                    end
-                end
+                scbal.orderCounts[archetype] = scbal.orderCounts[archetype] + 1
+                scbal.orderCounts[5] = scbal.orderCounts[5] + 1
             else
-                scbal.destroTotal = scbal.destroTotal + 1
-                local incr = 1
-                for i, h in pairs(scbal.destroHealerCareers) do
-                    if ( WStringsCompareIgnoreGrammer(value.career, h ) == 0 ) then
-                        scbal.destroHealers = scbal.destroHealers + incr
-                        incr = 0
-                    end
-                end
+                scbal.destroCounts[archetype] = scbal.destroCounts[archetype] + 1
+                scbal.destroCounts[5] = scbal.destroCounts[5] + 1
             end
         end
     end
 end
 
 function scbal.updateLabels()
-    local orderNumbers = L""..scbal.orderHealers..L"/"..scbal.orderTotal
-    local destroNumbers = L""..scbal.destroHealers..L"/"..scbal.destroTotal
+    if (scbal.test == true) then
+        scbal.orderCounts = {48,12,12,12,12}
+        scbal.destroCounts = {4,1,1,1,1}
+    end
+    local orderNumbers = L"" .. scbal.orderCounts[5]
+                    .. L"=" .. scbal.orderCounts[4]
+                    .. L"+" .. scbal.orderCounts[3]
+                    .. L"+" .. scbal.orderCounts[2]
+                    .. L"+" .. scbal.orderCounts[1]
+    local destroNumbers = L"" .. scbal.destroCounts[5]
+                    .. L"=" .. scbal.destroCounts[4]
+                    .. L"+" .. scbal.destroCounts[3]
+                    .. L"+" .. scbal.destroCounts[2]
+                    .. L"+" .. scbal.destroCounts[1]
+                    
     if ( GameData.Player.realm == GameData.Realm.DESTRUCTION ) then
         LabelSetText("scbalUs", destroNumbers)
         LabelSetText("scbalThem", orderNumbers)
@@ -174,3 +176,23 @@ function scbal.words(str)
   if not str:gsub("[^%s]+", helper):find"%S" then return t end
 end
 
+function scbal.careerNameToArchetype(career)
+    local classindex = 0
+    for i = 1, 2*scbal.num_careers do
+        if ( WStringsCompareIgnoreGrammer(career, scbal.careers[i]) == 0 ) then
+            classindex = i
+            break
+        end
+    end
+    if ( classindex > scbal.num_careers ) then classindex = classindex - scbal.num_careers end
+    if ( classindex > scbal.num_careers/2 ) then classindex = classindex - scbal.num_careers/2 end
+    if ( classindex <= scbal.tank_end ) then
+        return 1
+    elseif ( classindex <= scbal.mdps_end ) then
+        return 2
+    elseif ( classindex <= scbal.rdps_end ) then
+        return 3
+    else
+        return 4
+    end
+end

@@ -6,11 +6,11 @@
     <Windows>
         <Window name="scbal" inherits="EA_Window_Default" layer="background" movable="true" savesettings="true">
             <Size>
-                <AbsPoint x="80" y="60"/>
+                <AbsPoint x="180" y="60"/>
             </Size>
             <Anchors>
                 <Anchor point="topleft" relativePoint="topleft" relativeTo="EA_Window_OverheadMapFilterMenuButton">
-                    <AbsPoint x="-85" y="0"/>
+                    <AbsPoint x="-175" y="0"/>
                 </Anchor>
             </Anchors>
             <Windows>
@@ -20,9 +20,9 @@
                         <Anchor point="bottomright" relativePoint="bottomright" relativeTo="$parent"/>
                     </Anchors>
                 </Window>
-                <Label name="$parentUs" font="font_default_text" maxchars="8" textalign="center" autoresize="false" wordwrap="false" handleinput="false">
+                <Label name="$parentUs" font="font_default_text" maxchars="14" textalign="center" autoresize="false" wordwrap="false" handleinput="false">
                     <Size>
-                        <AbsPoint x="135" y="24" />
+                        <AbsPoint x="180" y="24" />
                     </Size>
                     <Anchors>
                         <Anchor point="top" relativePoint="top" relativeTo="$parent">
@@ -31,9 +31,9 @@
                     </Anchors>
                     <Color r="0" g="255" b="0" a="255"/>
                 </Label>
-                <Label name="$parentThem" font="font_default_text" maxchars="8" textalign="center" autoresize="false" wordwrap="false" handleinput="false">
+                <Label name="$parentThem" font="font_default_text" maxchars="14" textalign="center" autoresize="false" wordwrap="false" handleinput="false">
                     <Size>
-                        <AbsPoint x="135" y="24" />
+                        <AbsPoint x="180" y="24" />
                     </Size>
                     <Anchors>
                         <Anchor point="top" relativePoint="top" relativeTo="$parent">
