@@ -5,14 +5,23 @@ function scbal.initialize()
         scbal.settings = {}
         scbal.settings.wantShow = true
     end
+
+    if ( not scbal.debug ) then
+        scbal.debug = false
+    end
     
     scbal.orderCounts = {0,0,0,0,0}
     scbal.destroCounts = {0,0,0,0,0}
+    scbal.activityScore = {}
+    scbal.clock = 0
+    scbal.needStop = false
     
     scbal.nowShowing = false
     scbal.timeToUpdate = 0
-    scbal.timeBetweenUpdates = 2
+    scbal.timeBetweenUpdates = 4
+    scbal.idleTimeout = 120
     scbal.test = false
+    scbal.ignoreIdlePlayers = true
     
     scbal.careers = {
         --order careers, tanks first, then mdps, then rdps, then healers
@@ -58,6 +67,9 @@ function scbal.onSlashCmd(args)
         elseif ( opt == "test" ) then
             scbal.test = not scbal.test
             hadOpts = true
+        elseif ( opt == "idle" ) then
+            scbal.ignoreIdlePlayers = not scbal.ignoreIdlePayers
+            hasOpts = true
         else
             scbal.p("Usage: /scbal [on|off|test]")
             hasOpts = true
@@ -66,8 +78,9 @@ function scbal.onSlashCmd(args)
     if ( wantOn or not hadOpts ) then
         scbal.settings.wantShow = true
     end
-    scbal.p("ScenarioBalance:   on=", scbal.settings.wantShow)
-    scbal.p("ScenarioBalance: test=", scbal.test)
+    scbal.p("ScenarioBalance:                on=", scbal.settings.wantShow)
+    scbal.p("ScenarioBalance:              test=", scbal.test)
+    scbal.p("ScenarioBalance: ignoreIdlePlayers=", scbal.ignoreIdlePlayers)
     scbal.showOrHide()
 end
 
@@ -95,10 +108,20 @@ end
 
 function scbal.tickTock(elapsed)
     scbal.timeToUpdate = scbal.timeToUpdate - elapsed
+    scbal.clock = scbal.clock + elapsed
     if ( scbal.timeToUpdate <= 0 ) then
         if ( scbal.inScenario() ) then
+            -- make sure stats are getting updated
+            -- need to do this periodically because opening and closing the scenario
+            -- summary window will stop updates
+            BroadcastEvent( SystemData.Events.SCENARIO_START_UPDATING_PLAYERS_STATS)
+            scbal.needStop = true
             scbal.updateCounts()
         else
+            if ( scbal.needStop ) then
+                BroadcastEvent( SystemData.Events.SCENARIO_STOP_UPDATING_PLAYERS_STATS )
+                scbal.needStop = false
+            end
             scbal.orderCounts = {0,0,0,0,0}
             scbal.destroCounts = {0,0,0,0,0}
         end
@@ -115,13 +138,44 @@ function scbal.updateCounts()
 
     if ( players ~= nil ) then
         for key, value in ipairs(players) do
-            local archetype = scbal.careerNameToArchetype(value.career)            
-            if ( value.realm == GameData.Realm.ORDER ) then
-                scbal.orderCounts[archetype] = scbal.orderCounts[archetype] + 1
-                scbal.orderCounts[5] = scbal.orderCounts[5] + 1
-            else
-                scbal.destroCounts[archetype] = scbal.destroCounts[archetype] + 1
-                scbal.destroCounts[5] = scbal.destroCounts[5] + 1
+            local countPlayer = true
+            if ( value.name ~= L"" ) then
+                local score =  value.deaths + value.damagedealt + value.healingdealt + value.solokills + value.groupkills
+                    + value.renown + value.deathblows + value.renownbonus + value.experience + value.experiencebonus
+                if ( scbal.activityScore[value.name] == nil ) then
+                    scbal.activityScore[value.name] = {}
+                    scbal.activityScore[value.name].baseTime = scbal.clock
+                    scbal.activityScore[value.name].score = score
+                    scbal.activityScore[value.name].tracking = true
+                    if ( scbal.debug ) then scbal.p("init tracking for ", value.name) end
+                else
+                    local idleTime = scbal.clock - scbal.activityScore[value.name].baseTime
+                    if ( score ~= scbal.activityScore[value.name].score
+                      or GameData.ScenarioData.mode ~= GameData.ScenarioMode.RUNNING ) then
+                        scbal.activityScore[value.name].baseTime = scbal.clock
+                        scbal.activityScore[value.name].score = score
+                        if ( scbal.activityScore[value.name].tracking == false ) then
+                            scbal.activityScore[value.name].tracking = true
+                            if ( scbal.debug ) then scbal.p("active ",value.name," score ",score) end
+                        end
+                    else
+                        if ( idleTime > scbal.idleTimeout and scbal.ignoreIdlePlayers ) then
+                            if ( scbal.debug ) then scbal.p("not counting ",value.name," idle for ",idleTime) end
+                            scbal.activityScore[value.name].tracking = false
+                            countPlayer = false
+                        end
+                    end
+                end
+                if ( countPlayer == true ) then
+                    local archetype = scbal.careerNameToArchetype(value.career)            
+                    if ( value.realm == GameData.Realm.ORDER ) then
+                        scbal.orderCounts[archetype] = scbal.orderCounts[archetype] + 1
+                        scbal.orderCounts[5] = scbal.orderCounts[5] + 1
+                    else
+                        scbal.destroCounts[archetype] = scbal.destroCounts[archetype] + 1
+                        scbal.destroCounts[5] = scbal.destroCounts[5] + 1
+                    end
+                end
             end
         end
     end
