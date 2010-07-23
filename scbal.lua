@@ -107,6 +107,7 @@ end
 
 function scbal.inScenario()
     if ( GameData.Player.isInSiege or GameData.Player.isInScenario) then
+        scbal.test = false
         return true
     else
         return false
