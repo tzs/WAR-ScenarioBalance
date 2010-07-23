@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ModuleFile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <UiMod name="ScenarioBalance" version="1.2.1" date="2010-07-06">
+    <UiMod name="ScenarioBalance" version="1.2" date="2010-07-23">
         <Author name="tzs"/>
         <Description text="Shows count of scenario players and healers in a small window"/>
         <VersionSettings gameVersion="1.3.5"/>
         <Dependencies>
             <Dependency name="EA_ChatWindow"/>
-            <Dependency name="LibSlash" />
+            <Dependency name="LibSlash"/>
         </Dependencies>
         <Files>
             <File name="scbal.lua"/>
@@ -20,12 +20,12 @@
         </OnUpdate>
         <OnShutdown/>
         <SavedVariables>
-            <SavedVariable name="scbal.settings" />
-        </SavedVariables>        
-    <WARInfo>
-    <Categories>
-        <Category name="RVR" />
-    </Categories>
-    </WARInfo>
+            <SavedVariable name="scbal.settings"/>
+        </SavedVariables>
+        <WARInfo>
+            <Categories>
+                <Category name="RVR"/>
+            </Categories>
+        </WARInfo>
     </UiMod>
 </ModuleFile>

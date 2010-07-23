@@ -6,6 +6,12 @@ function scbal.initialize()
         scbal.settings.wantShow = true
     end
 
+    --settings added after initial release have to be handled individually
+    --so that users who have old versions will have get them
+    if ( scbal.settings.mode == nil ) then
+        scbal.settings.mode = 0     --0 == show active, 1 == show all
+    end
+
     if ( not scbal.debug ) then
         scbal.debug = false
     end
@@ -45,12 +51,13 @@ function scbal.initialize()
         scbal.careers[i] = GetStringFromTable("CareerLinesMale", scbal.careers[i])
     end
     
-    CreateWindow("scbal", true)
-    LayoutEditor.RegisterWindow( "scbal" , L"Scenario Balance" , L"Scenario Balance Window",
+    CreateWindow("scbalWin", true)
+    LayoutEditor.RegisterWindow( "scbalWin" , L"Scenario Balance" , L"Scenario Balance Window",
                                false , false , true , nil )
-    LabelSetText("scbalUs", L"10/32")
-    LabelSetText("scbalThem", L"1/8")
-    WindowSetShowing("scbal", false)
+    LabelSetText("scbalWinUs", L"")
+    LabelSetText("scbalWinThem", L"")
+    scbal.setMode(scbal.settings.mode)
+    WindowSetShowing("scbalWin", false)
     scbal.showOrHide()
     LibSlash.RegisterWSlashCmd("scbal", function(args) scbal.onSlashCmd(args) end)
 end
@@ -67,8 +74,8 @@ function scbal.onSlashCmd(args)
         elseif ( opt == "test" ) then
             scbal.test = not scbal.test
             hadOpts = true
-        elseif ( opt == "idle" ) then
-            scbal.ignoreIdlePlayers = not scbal.ignoreIdlePayers
+        elseif ( opt == "mode" ) then
+            scbal.setMode(1-scbal.settings.mode)
             hasOpts = true
         else
             scbal.p("Usage: /scbal [on|off|test]")
@@ -78,21 +85,21 @@ function scbal.onSlashCmd(args)
     if ( wantOn or not hadOpts ) then
         scbal.settings.wantShow = true
     end
-    scbal.p("ScenarioBalance:                on=", scbal.settings.wantShow)
-    scbal.p("ScenarioBalance:              test=", scbal.test)
-    scbal.p("ScenarioBalance: ignoreIdlePlayers=", scbal.ignoreIdlePlayers)
+    scbal.p("ScenarioBalance:   on=", scbal.settings.wantShow)
+    scbal.p("ScenarioBalance: mode=", scbal.settings.mode)
+    scbal.p("ScenarioBalance: test=", scbal.test)
     scbal.showOrHide()
 end
 
 function scbal.showOrHide()
     if ( scbal.test or (scbal.settings.wantShow and scbal.inScenario()) ) then
         if ( not scbal.nowShowing ) then
-            WindowSetShowing("scbal", true)
+            WindowSetShowing("scbalWin", true)
             scbal.nowShowing = true
         end
     else
         if ( scbal.nowShowing ) then
-            WindowSetShowing("scbal", false)
+            WindowSetShowing("scbalWin", false)
             scbal.nowShowing = false
         end
     end
@@ -138,7 +145,6 @@ function scbal.updateCounts()
 
     if ( players ~= nil ) then
         for key, value in ipairs(players) do
-            local countPlayer = true
             if ( value.name ~= L"" ) then
                 local score =  value.deaths + value.damagedealt + value.healingdealt + value.solokills + value.groupkills
                     + value.renown + value.deathblows + value.renownbonus + value.experience + value.experiencebonus
@@ -159,14 +165,13 @@ function scbal.updateCounts()
                             if ( scbal.debug ) then scbal.p("active ",value.name," score ",score) end
                         end
                     else
-                        if ( idleTime > scbal.idleTimeout and scbal.ignoreIdlePlayers ) then
+                        if ( idleTime > scbal.idleTimeout ) then
                             if ( scbal.debug ) then scbal.p("not counting ",value.name," idle for ",idleTime) end
                             scbal.activityScore[value.name].tracking = false
-                            countPlayer = false
                         end
                     end
                 end
-                if ( countPlayer == true ) then
+                if ( scbal.activityScore[value.name].tracking == true or scbal.settings.mode == 1 ) then
                     local archetype = scbal.careerNameToArchetype(value.career)            
                     if ( value.realm == GameData.Realm.ORDER ) then
                         scbal.orderCounts[archetype] = scbal.orderCounts[archetype] + 1
@@ -182,9 +187,14 @@ function scbal.updateCounts()
 end
 
 function scbal.updateLabels()
-    if (scbal.test == true) then
-        scbal.orderCounts = {48,12,12,12,12}
-        scbal.destroCounts = {4,1,1,1,1}
+    if (scbal.test == true ) then
+        if ( scbal.settings.mode == 0 ) then
+            scbal.orderCounts = {12,11,10,10,43}
+            scbal.destroCounts = {1,1,1,1,4}
+        else
+            scbal.orderCounts = {12,12,12,12,48}
+            scbal.destroCounts = {1,1,1,1,4}
+        end
     end
     local orderNumbers = L"" .. scbal.orderCounts[5]
                     .. L"=" .. scbal.orderCounts[4]
@@ -198,13 +208,31 @@ function scbal.updateLabels()
                     .. L"+" .. scbal.destroCounts[1]
                     
     if ( GameData.Player.realm == GameData.Realm.DESTRUCTION ) then
-        LabelSetText("scbalUs", destroNumbers)
-        LabelSetText("scbalThem", orderNumbers)
+        LabelSetText("scbalWinUs", destroNumbers)
+        LabelSetText("scbalWinThem", orderNumbers)
     else
-        LabelSetText("scbalUs", orderNumbers)
-        LabelSetText("scbalThem", destroNumbers)
+        LabelSetText("scbalWinUs", orderNumbers)
+        LabelSetText("scbalWinThem", destroNumbers)
     end
 end
+
+function scbal.setMode(newMode)
+    scbal.settings.mode = newMode
+    if ( newMode == 0 ) then
+        LabelSetText("scbalWinMode", L"Show: active")
+    elseif ( newMode == 1 ) then
+        LabelSetText("scbalWinMode", L"Show: all")
+    else
+        LabelSetText("scbalWinMode", L" unknown mode")
+    end
+end
+
+function scbal.changeMode()
+    scbal.setMode(1-scbal.settings.mode)
+    scbal.updateCounts()
+    scbal.updateLabels()
+end
+
 
 function scbal.p(...)
     local out = L""
