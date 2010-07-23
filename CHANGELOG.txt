@@ -1,3 +1,9 @@
+v1.3
+
+filter out idle or missing players
+allow setting filter mode
+entering scenario turns off test mode
+========================================================================
 v1.2.1
 
 Forgot to update the version number in the .mod file in 1.2.
