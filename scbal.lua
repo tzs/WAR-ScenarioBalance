@@ -60,7 +60,7 @@ function scbal.initialize()
     WindowSetShowing("scbalWin", false)
     scbal.showOrHide()
     LibSlash.RegisterWSlashCmd("scbal", function(args) scbal.onSlashCmd(args) end)
-    WindowRegisterEventHandler( "scbal", SystemData.Events.SCENARIO_PLAYERS_LIST_STATS_UPDATED, "scbal.statsUpdated")
+    WindowRegisterEventHandler( "scbalWin", SystemData.Events.SCENARIO_PLAYERS_LIST_STATS_UPDATED, "scbal.statsUpdated")
 end
 
 function scbal.statsUpdated()
