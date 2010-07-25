@@ -63,7 +63,7 @@ function scbal.reInitialize()
     scbal.lastPassedOnUpdate = 0
 
     --unhook the scenario summary window from the update events, to combat the lag caused when
-    --it process events
+    --it processes events
     WindowUnregisterEventHandler("ScenarioSummaryWindow", SystemData.Events.SCENARIO_PLAYERS_LIST_UPDATED)
     WindowUnregisterEventHandler("ScenarioSummaryWindow", SystemData.Events.SCENARIO_PLAYERS_LIST_STATS_UPDATED)
 end

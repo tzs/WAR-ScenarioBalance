@@ -1,3 +1,9 @@
+v1.4
+
+turn off system updates as soon as data received
+fix window name
+throttle updates to mythic window to combat lag
+========================================================================
 v1.3
 
 filter out idle or missing players
