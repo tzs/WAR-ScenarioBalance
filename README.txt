@@ -1,4 +1,4 @@
-ScenarioBalance v1.3
+ScenarioBalance v1.4
 
 Puts up a small window that shows how many people are in your scenario or
 city instance, and how many of them are healers, RDPS, MDPS, and tanks,
@@ -54,3 +54,8 @@ You can drag it elsewhere if you wish, and the position will be saved.
 
 You can also use the layout editor to change its position, or to change
 the opacity.
+
+As a side effect of the way ScenarioBalance works, Mythic's scenario
+scoreboard window will only update every few seconds instead of updating
+continuously when open. This should to a large extent get rid of the
+horrible lag that Mythic's window causes.

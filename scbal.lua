@@ -12,23 +12,15 @@ function scbal.initialize()
         scbal.settings.mode = 0     --0 == show active, 1 == show all
     end
 
-    if ( not scbal.debug ) then
-        scbal.debug = false
-    end
-    
-    scbal.orderCounts = {0,0,0,0,0}
-    scbal.destroCounts = {0,0,0,0,0}
-    scbal.activityScore = {}
-    scbal.clock = 0
-    scbal.needStop = false
-    
-    scbal.nowShowing = false
-    scbal.timeToUpdate = 0
-    scbal.timeBetweenUpdates = 4
+    scbal.debug = false
+    scbal.timeBetweenUpdates = 5
     scbal.idleTimeout = 120
+    scbal.updatePassthroughLockout = 3
     scbal.test = false
-    scbal.ignoreIdlePlayers = true
-    
+    scbal.nowShowing = false
+    scbal.clock = 0
+    scbal.reInitialize()
+
     scbal.careers = {
         --order careers, tanks first, then mdps, then rdps, then healers
         GameDefs.CAREERID_IRON_BREAKER, GameDefs.CAREERID_SWORDMASTER, GameDefs.CAREERID_KNIGHT,
@@ -50,22 +42,45 @@ function scbal.initialize()
         scbal.careers[i+scbal.num_careers] = GetStringFromTable("CareerLinesFemale", scbal.careers[i])
         scbal.careers[i] = GetStringFromTable("CareerLinesMale", scbal.careers[i])
     end
-    
+
     CreateWindow("scbalWin", true)
-    LayoutEditor.RegisterWindow( "scbalWin" , L"Scenario Balance" , L"Scenario Balance Window",
-                               false , false , true , nil )
+    WindowSetShowing("scbalWin", false)
     LabelSetText("scbalWinUs", L"")
     LabelSetText("scbalWinThem", L"")
     scbal.setMode(scbal.settings.mode)
-    WindowSetShowing("scbalWin", false)
-    scbal.showOrHide()
+
     LibSlash.RegisterWSlashCmd("scbal", function(args) scbal.onSlashCmd(args) end)
     WindowRegisterEventHandler( "scbalWin", SystemData.Events.SCENARIO_PLAYERS_LIST_STATS_UPDATED, "scbal.statsUpdated")
+    LayoutEditor.RegisterWindow( "scbalWin" , L"Scenario Balance" , L"Scenario Balance Window",
+                               false , false , true , nil )
+end
+
+function scbal.reInitialize()
+    scbal.orderCounts = {0,0,0,0,0}
+    scbal.destroCounts = {0,0,0,0,0}
+    scbal.activityScore = {}
+    scbal.timeToUpdate = 0
+    scbal.lastPassedOnUpdate = 0
+
+    --unhook the scenario summary window from the update events, to combat the lag caused when
+    --it process events
+    WindowUnregisterEventHandler("ScenarioSummaryWindow", SystemData.Events.SCENARIO_PLAYERS_LIST_UPDATED)
+    WindowUnregisterEventHandler("ScenarioSummaryWindow", SystemData.Events.SCENARIO_PLAYERS_LIST_STATS_UPDATED)
 end
 
 function scbal.statsUpdated()
-    BroadcastEvent( SystemData.Events.SCENARIO_STOP_UPDATING_PLAYERS_STATS )
-    scbal.updateCounts()
+    BroadcastEvent(SystemData.Events.SCENARIO_STOP_UPDATING_PLAYERS_STATS)
+    if ( WindowGetShowing("ScenarioSummaryWindow") == true ) then
+        local elapsed = scbal.clock - scbal.lastPassedOnUpdate
+        if ( elapsed >= scbal.updatePassthroughLockout ) then
+            ScenarioSummaryWindow.OnPlayerListUpdated()
+            scbal.lastPassedOnUpdate = scbal.clock
+        end
+    end
+    if ( scbal.nowShowing == true ) then
+        scbal.updateCounts()
+        scbal.updateLabels()
+    end
 end
 
 function scbal.onSlashCmd(args)
@@ -84,7 +99,7 @@ function scbal.onSlashCmd(args)
             scbal.setMode(1-scbal.settings.mode)
             hasOpts = true
         else
-            scbal.p("Usage: /scbal [on|off|test]")
+            scbal.p("Usage: /scbal [on|off|test|mode]")
             hasOpts = true
         end
     end
@@ -102,6 +117,7 @@ function scbal.showOrHide()
         if ( not scbal.nowShowing ) then
             WindowSetShowing("scbalWin", true)
             scbal.nowShowing = true
+            scbal.reInitialize()
         end
     else
         if ( scbal.nowShowing ) then
@@ -120,72 +136,84 @@ function scbal.inScenario()
     end
 end
 
+function scbal.scenarioRunning()
+    if ( GameData.Player.isInSiege ) then
+        return true
+    elseif ( GameData.Player.isInScenario and GameData.ScenarioData.mode ~= GameData.ScenarioMode.PRE_MODE ) then
+        return true
+    else
+        return false
+    end
+end
+
 function scbal.tickTock(elapsed)
     scbal.timeToUpdate = scbal.timeToUpdate - elapsed
     scbal.clock = scbal.clock + elapsed
+    scbal.showOrHide()
+
     if ( scbal.timeToUpdate <= 0 ) then
-        if ( scbal.inScenario() ) then
-            -- make sure stats are getting updated
-            -- need to do this periodically because opening and closing the scenario
-            -- summary window will stop updates
-            BroadcastEvent( SystemData.Events.SCENARIO_START_UPDATING_PLAYERS_STATS)
-            scbal.needStop = true
-            scbal.updateCounts()
-        else
-            if ( scbal.needStop ) then
-                BroadcastEvent( SystemData.Events.SCENARIO_STOP_UPDATING_PLAYERS_STATS )
-                scbal.needStop = false
+        if ( scbal.inScenario() == true ) then
+            if ( scbal.nowShowing == true ) then
+                BroadcastEvent(SystemData.Events.SCENARIO_START_UPDATING_PLAYERS_STATS)
             end
-            scbal.orderCounts = {0,0,0,0,0}
-            scbal.destroCounts = {0,0,0,0,0}
+        elseif ( scbal.test == true ) then
+            scbal.statsUpdated()
         end
-        scbal.updateLabels()
-        scbal.showOrHide()
         scbal.timeToUpdate = scbal.timeBetweenUpdates
     end
 end
 
 function scbal.updateCounts()
-    local players = GameData.GetScenarioPlayers()
-    scbal.orderCounts = {0,0,0,0,0}
-    scbal.destroCounts = {0,0,0,0,0}
+    if ( scbal.test == true ) then
+        if ( scbal.settings.mode == 0 ) then
+            scbal.orderCounts = {12,11,10,10,43}
+            scbal.destroCounts = {1,1,1,1,4}
+        else
+            scbal.orderCounts = {12,12,12,12,48}
+            scbal.destroCounts = {1,1,1,1,4}
+        end
+    else
+        local players = GameData.GetScenarioPlayers()
+        scbal.orderCounts = {0,0,0,0,0}
+        scbal.destroCounts = {0,0,0,0,0}
 
-    if ( players ~= nil ) then
-        for key, value in ipairs(players) do
-            if ( value.name ~= L"" ) then
-                local score =  value.deaths + value.damagedealt + value.healingdealt + value.solokills + value.groupkills
-                    + value.renown + value.deathblows + value.renownbonus + value.experience + value.experiencebonus
-                if ( scbal.activityScore[value.name] == nil ) then
-                    scbal.activityScore[value.name] = {}
-                    scbal.activityScore[value.name].baseTime = scbal.clock
-                    scbal.activityScore[value.name].score = score
-                    scbal.activityScore[value.name].tracking = true
-                    if ( scbal.debug ) then scbal.p("init tracking for ", value.name) end
-                else
-                    local idleTime = scbal.clock - scbal.activityScore[value.name].baseTime
-                    if ( score ~= scbal.activityScore[value.name].score
-                      or GameData.ScenarioData.mode ~= GameData.ScenarioMode.RUNNING ) then
+        if ( players ~= nil ) then
+            for key, value in ipairs(players) do
+                if ( value.name ~= L"" ) then
+                    local score =  value.deaths + value.damagedealt + value.healingdealt + value.solokills + value.groupkills
+                        + value.renown + value.deathblows + value.renownbonus + value.experience + value.experiencebonus
+                    if ( scbal.activityScore[value.name] == nil ) then
+                        scbal.activityScore[value.name] = {}
                         scbal.activityScore[value.name].baseTime = scbal.clock
                         scbal.activityScore[value.name].score = score
-                        if ( scbal.activityScore[value.name].tracking == false ) then
-                            scbal.activityScore[value.name].tracking = true
-                            if ( scbal.debug ) then scbal.p("active ",value.name," score ",score) end
-                        end
+                        scbal.activityScore[value.name].tracking = true
+                        if ( scbal.debug ) then scbal.p("init tracking for ", value.name) end
                     else
-                        if ( idleTime > scbal.idleTimeout ) then
-                            if ( scbal.debug ) then scbal.p("not counting ",value.name," idle for ",idleTime) end
-                            scbal.activityScore[value.name].tracking = false
+                        local idleTime = scbal.clock - scbal.activityScore[value.name].baseTime
+                        if ( score ~= scbal.activityScore[value.name].score or not scbal.scenarioRunning() ) then
+                            scbal.activityScore[value.name].baseTime = scbal.clock
+                            scbal.activityScore[value.name].score = score
+                            if ( scbal.activityScore[value.name].tracking == false ) then
+                                scbal.activityScore[value.name].tracking = true
+                                if ( scbal.debug ) then scbal.p("active ",value.name," score ",score) end
+                            end
+                        else
+                            if ( idleTime > scbal.idleTimeout ) then
+                                if ( scbal.debug and scbal.activityScore[value.name].tracking == true ) then scbal.p("not counting ",value.name," idle for ",idleTime) end
+                                scbal.activityScore[value.name].tracking = false
+                            end
                         end
                     end
-                end
-                if ( scbal.activityScore[value.name].tracking == true or scbal.settings.mode == 1 ) then
-                    local archetype = scbal.careerNameToArchetype(value.career)            
-                    if ( value.realm == GameData.Realm.ORDER ) then
-                        scbal.orderCounts[archetype] = scbal.orderCounts[archetype] + 1
-                        scbal.orderCounts[5] = scbal.orderCounts[5] + 1
-                    else
-                        scbal.destroCounts[archetype] = scbal.destroCounts[archetype] + 1
-                        scbal.destroCounts[5] = scbal.destroCounts[5] + 1
+                    if ( scbal.activityScore[value.name].tracking == true or scbal.settings.mode == 1 ) then
+                        local archetype = scbal.careerNameToArchetype(value.career)
+
+                        if ( value.realm == GameData.Realm.ORDER ) then
+                            scbal.orderCounts[archetype] = scbal.orderCounts[archetype] + 1
+                            scbal.orderCounts[5] = scbal.orderCounts[5] + 1
+                        else
+                            scbal.destroCounts[archetype] = scbal.destroCounts[archetype] + 1
+                            scbal.destroCounts[5] = scbal.destroCounts[5] + 1
+                        end
                     end
                 end
             end
@@ -194,15 +222,6 @@ function scbal.updateCounts()
 end
 
 function scbal.updateLabels()
-    if (scbal.test == true ) then
-        if ( scbal.settings.mode == 0 ) then
-            scbal.orderCounts = {12,11,10,10,43}
-            scbal.destroCounts = {1,1,1,1,4}
-        else
-            scbal.orderCounts = {12,12,12,12,48}
-            scbal.destroCounts = {1,1,1,1,4}
-        end
-    end
     local orderNumbers = L"" .. scbal.orderCounts[5]
                     .. L"=" .. scbal.orderCounts[4]
                     .. L"+" .. scbal.orderCounts[3]
@@ -213,7 +232,7 @@ function scbal.updateLabels()
                     .. L"+" .. scbal.destroCounts[3]
                     .. L"+" .. scbal.destroCounts[2]
                     .. L"+" .. scbal.destroCounts[1]
-                    
+
     if ( GameData.Player.realm == GameData.Realm.DESTRUCTION ) then
         LabelSetText("scbalWinUs", destroNumbers)
         LabelSetText("scbalWinThem", orderNumbers)
@@ -239,7 +258,6 @@ function scbal.changeMode()
     scbal.updateCounts()
     scbal.updateLabels()
 end
-
 
 function scbal.p(...)
     local out = L""
