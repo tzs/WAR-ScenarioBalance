@@ -1,4 +1,4 @@
-ScenarioBalance v1.4
+ScenarioBalance v1.5
 
 Puts up a small window that shows how many people are in your scenario or
 city instance, and how many of them are healers, RDPS, MDPS, and tanks,
@@ -6,7 +6,7 @@ for each side. Green numbers are your side, red numbers are the enemy.
 
 For each side, the display is formatted like this:
 
-    12 = 4 + 2 + 1 + 5
+    12=4h 2r 1m 5t
 
 The first number is the total number of players. That's followed
 by the counts of healers, RDPS, MDPS, and tanks in that order.

@@ -43,15 +43,15 @@ function scbal.initialize()
         scbal.careers[i] = GetStringFromTable("CareerLinesMale", scbal.careers[i])
     end
 
-    CreateWindow("scbalWin", true)
-    WindowSetShowing("scbalWin", false)
-    LabelSetText("scbalWinUs", L"")
-    LabelSetText("scbalWinThem", L"")
+    CreateWindow("scbalWin2", true)
+    WindowSetShowing("scbalWin2", false)
+    LabelSetText("scbalWin2Us", L"")
+    LabelSetText("scbalWin2Them", L"")
     scbal.setMode(scbal.settings.mode)
 
     LibSlash.RegisterWSlashCmd("scbal", function(args) scbal.onSlashCmd(args) end)
-    WindowRegisterEventHandler( "scbalWin", SystemData.Events.SCENARIO_PLAYERS_LIST_STATS_UPDATED, "scbal.statsUpdated")
-    LayoutEditor.RegisterWindow( "scbalWin" , L"Scenario Balance" , L"Scenario Balance Window",
+    WindowRegisterEventHandler( "scbalWin2", SystemData.Events.SCENARIO_PLAYERS_LIST_STATS_UPDATED, "scbal.statsUpdated")
+    LayoutEditor.RegisterWindow( "scbalWin2" , L"Scenario Balance" , L"Scenario Balance Window",
                                false , false , true , nil )
 end
 
@@ -115,13 +115,13 @@ end
 function scbal.showOrHide()
     if ( scbal.test or (scbal.settings.wantShow and scbal.inScenario()) ) then
         if ( not scbal.nowShowing ) then
-            WindowSetShowing("scbalWin", true)
+            WindowSetShowing("scbalWin2", true)
             scbal.nowShowing = true
             scbal.reInitialize()
         end
     else
         if ( scbal.nowShowing ) then
-            WindowSetShowing("scbalWin", false)
+            WindowSetShowing("scbalWin2", false)
             scbal.nowShowing = false
         end
     end
@@ -169,7 +169,7 @@ function scbal.updateCounts()
             scbal.orderCounts = {12,11,10,10,43}
             scbal.destroCounts = {1,1,1,1,4}
         else
-            scbal.orderCounts = {12,12,12,12,48}
+            scbal.orderCounts = {88,88,88,88,352}
             scbal.destroCounts = {1,1,1,1,4}
         end
     else
@@ -221,35 +221,44 @@ function scbal.updateCounts()
     end
 end
 
+function scbal.formatLine(h,r,m,t)
+    local total = h + r + m + t
+    local line = L"";
+    line = line .. total .. L"="
+    line = line .. h .. L"h "
+    line = line .. r .. L"r "
+    line = line .. m .. L"m "
+    line = line .. t .. L"t"
+    return line
+end
+
 function scbal.updateLabels()
-    local orderNumbers = L"" .. scbal.orderCounts[5]
-                    .. L"=" .. scbal.orderCounts[4]
-                    .. L"+" .. scbal.orderCounts[3]
-                    .. L"+" .. scbal.orderCounts[2]
-                    .. L"+" .. scbal.orderCounts[1]
-    local destroNumbers = L"" .. scbal.destroCounts[5]
-                    .. L"=" .. scbal.destroCounts[4]
-                    .. L"+" .. scbal.destroCounts[3]
-                    .. L"+" .. scbal.destroCounts[2]
-                    .. L"+" .. scbal.destroCounts[1]
+    local orderNumbers = scbal.formatLine( scbal.orderCounts[4],
+                                           scbal.orderCounts[3],
+                                           scbal.orderCounts[2],
+                                           scbal.orderCounts[1] )
+    local destroNumbers = scbal.formatLine( scbal.destroCounts[4],
+                                            scbal.destroCounts[3],
+                                            scbal.destroCounts[2],
+                                            scbal.destroCounts[1] )
 
     if ( GameData.Player.realm == GameData.Realm.DESTRUCTION ) then
-        LabelSetText("scbalWinUs", destroNumbers)
-        LabelSetText("scbalWinThem", orderNumbers)
+        LabelSetText("scbalWin2Us", destroNumbers)
+        LabelSetText("scbalWin2Them", orderNumbers)
     else
-        LabelSetText("scbalWinUs", orderNumbers)
-        LabelSetText("scbalWinThem", destroNumbers)
+        LabelSetText("scbalWin2Us", orderNumbers)
+        LabelSetText("scbalWin2Them", destroNumbers)
     end
 end
 
 function scbal.setMode(newMode)
     scbal.settings.mode = newMode
     if ( newMode == 0 ) then
-        LabelSetText("scbalWinMode", L"Show: active")
+        LabelSetText("scbalWin2Mode", L"Show: active")
     elseif ( newMode == 1 ) then
-        LabelSetText("scbalWinMode", L"Show: all")
+        LabelSetText("scbalWin2Mode", L"Show: all")
     else
-        LabelSetText("scbalWinMode", L" unknown mode")
+        LabelSetText("scbalWin2Mode", L" unknown mode")
     end
 end
 

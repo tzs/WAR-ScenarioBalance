@@ -4,13 +4,13 @@
         <Script file="scbal.lua"/>
     </Scripts>
     <Windows>
-        <Window name="scbalWin" inherits="EA_Window_Default" layer="background" movable="true" savesettings="true">
+        <Window name="scbalWin2" inherits="EA_Window_Default" layer="background" movable="true" savesettings="true">
             <Size>
-                <AbsPoint x="180" y="84"/>
+                <AbsPoint x="230" y="84"/>
             </Size>
             <Anchors>
                 <Anchor point="topleft" relativePoint="topleft" relativeTo="EA_Window_OverheadMapFilterMenuButton">
-                    <AbsPoint x="-175" y="0"/>
+                    <AbsPoint x="-225" y="0"/>
                 </Anchor>
             </Anchors>
             <Windows>
@@ -23,9 +23,9 @@
                         <EventHandler event="OnRButtonDown" function="scbal.changeMode"/>
                     </EventHandlers>
                 </Window>
-                <Label name="$parentMode" font="font_default_text" maxchars="14" textalign="left" autoresize="false" wordwrap="false" handleinput="false">
+                <Label name="$parentMode" font="font_default_text_small" maxchars="19" textalign="left" autoresize="false" wordwrap="false" handleinput="false">
                     <Size>
-                        <AbsPoint x="180" y="24"/>
+                        <AbsPoint x="230" y="24"/>
                     </Size>
                     <Anchors>
                         <Anchor point="topLeft" relativePoint="topLeft" relativeTo="$parent">
@@ -34,24 +34,24 @@
                     </Anchors>
                     <Color r="255" g="255" b="" a="255"/>
                 </Label>
-                <Label name="$parentUs" font="font_default_text" maxchars="14" textalign="center" autoresize="false" wordwrap="false" handleinput="false">
+                <Label name="$parentUs" font="font_default_text_small" maxchars="19" textalign="center" autoresize="false" wordwrap="false" handleinput="false">
                     <Size>
-                        <AbsPoint x="180" y="24"/>
+                        <AbsPoint x="230" y="24"/>
                     </Size>
                     <Anchors>
-                        <Anchor point="top" relativePoint="top" relativeTo="$parent">
-                            <AbsPoint x="" y="29"/>
+                        <Anchor point="topLeft" relativePoint="topLeft" relativeTo="$parent">
+                            <AbsPoint x="0" y="29"/>
                         </Anchor>
                     </Anchors>
                     <Color r="0" g="255" b="0" a="255"/>
                 </Label>
-                <Label name="$parentThem" font="font_default_text" maxchars="14" textalign="center" autoresize="false" wordwrap="false" handleinput="false">
+                <Label name="$parentThem" font="font_default_text_small" maxchars="19" textalign="center" autoresize="false" wordwrap="false" handleinput="false">
                     <Size>
-                        <AbsPoint x="180" y="24"/>
+                        <AbsPoint x="230" y="24"/>
                     </Size>
                     <Anchors>
-                        <Anchor point="top" relativePoint="top" relativeTo="$parent">
-                            <AbsPoint x="" y="54"/>
+                        <Anchor point="topLeft" relativePoint="topLeft" relativeTo="$parent">
+                            <AbsPoint x="0" y="54"/>
                         </Anchor>
                     </Anchors>
                     <Color r="255" g="0" b="0" a="255"/>
