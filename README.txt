@@ -52,8 +52,7 @@ Usage is simple:
 The window is initially placed just to the left of the map filters button.
 You can drag it elsewhere if you wish, and the position will be saved.
 
-You can also use the layout editor to change its position, or to change
-the opacity.
+You can also use the layout editor to change its position or the opacity.
 
 As a side effect of the way ScenarioBalance works, Mythic's scenario
 scoreboard window will only update every few seconds instead of updating
