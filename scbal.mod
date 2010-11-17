@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ModuleFile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <UiMod name="ScenarioBalance" version="1.5" date="2010-07-31">
+    <UiMod name="ScenarioBalance" version="1.6" date="2010-11-16">
         <Author name="tzs"/>
         <Description text="Shows count of scenario players and healers in a small window"/>
-        <VersionSettings gameVersion="1.3.5"/>
+        <VersionSettings gameVersion="1.4" />
         <Dependencies>
             <Dependency name="EA_ChatWindow"/>
             <Dependency name="LibSlash"/>

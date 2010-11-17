@@ -21,18 +21,34 @@ function scbal.initialize()
     scbal.clock = 0
     scbal.reInitialize()
 
-    scbal.careers = {
-        --order careers, tanks first, then mdps, then rdps, then healers
-        GameDefs.CAREERID_IRON_BREAKER, GameDefs.CAREERID_SWORDMASTER, GameDefs.CAREERID_KNIGHT,
-        GameDefs.CAREERID_SLAYER, GameDefs.CAREERID_WITCH_HUNTER, GameDefs.CAREERID_SEER,
-        GameDefs.CAREERID_ENGINEER, GameDefs.CAREERID_BRIGHT_WIZARD, GameDefs.CAREERID_SHADOW_WARRIOR,
-        GameDefs.CAREERID_WARRIOR_PRIEST, GameDefs.CAREERID_ARCHMAGE, GameDefs.CAREERID_RUNE_PRIEST,
-        --destruction careers, same order as order careers
-        GameDefs.CAREERID_BLACKORC, GameDefs.CAREERID_CHOSEN, GameDefs.CAREERID_SHADE,
-        GameDefs.CAREERID_ASSASSIN, GameDefs.CAREERID_CHOPPA, GameDefs.CAREERID_WARRIOR,
-        GameDefs.CAREERID_SQUIG_HERDER, GameDefs.CAREERID_MAGUS, GameDefs.CAREERID_SORCERER,
-        GameDefs.CAREERID_SHAMAN, GameDefs.CAREERID_ZEALOT, GameDefs.CAREERID_BLOOD_PRIEST
-    }
+    if ( GameData.CareerLine.WITCH_ELF ~= nil ) then
+        -- Game version 1.4 on the test server
+        scbal.careers = {
+            --order careers, tanks first, then mdps, then rdps, then healers
+            GameData.CareerLine.IRON_BREAKER, GameData.CareerLine.KNIGHT, GameData.CareerLine.SWORDMASTER,
+            GameData.CareerLine.SLAYER, GameData.CareerLine.WITCH_HUNTER, GameData.CareerLine.WHITE_LION,
+            GameData.CareerLine.ENGINEER, GameData.CareerLine.BRIGHT_WIZARD, GameData.CareerLine.SHADOW_WARRIOR,
+            GameData.CareerLine.RUNE_PRIEST, GameData.CareerLine.WARRIOR_PRIEST, GameData.CareerLine.ARCHMAGE,
+            --destruction careers, same order as order careers
+            GameData.CareerLine.BLACK_ORC, GameData.CareerLine.CHOSEN, GameData.CareerLine.BLACKGUARD,
+            GameData.CareerLine.CHOPPA, GameData.CareerLine.MARAUDER, GameData.CareerLine.WITCH_ELF,
+            GameData.CareerLine.SQUIG_HERDER, GameData.CareerLine.MAGUS, GameData.CareerLine.SORCERER,
+            GameData.CareerLine.SHAMAN, GameData.CareerLine.DISCIPLE, GameData.CareerLine.ZEALOT
+        }
+    else
+        scbal.careers = {
+            --order careers, tanks first, then mdps, then rdps, then healers
+            GameDefs.CAREERID_IRON_BREAKER, GameDefs.CAREERID_SWORDMASTER, GameDefs.CAREERID_KNIGHT,
+            GameDefs.CAREERID_SLAYER, GameDefs.CAREERID_WITCH_HUNTER, GameDefs.CAREERID_SEER,
+            GameDefs.CAREERID_ENGINEER, GameDefs.CAREERID_BRIGHT_WIZARD, GameDefs.CAREERID_SHADOW_WARRIOR,
+            GameDefs.CAREERID_WARRIOR_PRIEST, GameDefs.CAREERID_ARCHMAGE, GameDefs.CAREERID_RUNE_PRIEST,
+            --destruction careers, same order as order careers
+            GameDefs.CAREERID_BLACKORC, GameDefs.CAREERID_CHOSEN, GameDefs.CAREERID_SHADE,
+            GameDefs.CAREERID_ASSASSIN, GameDefs.CAREERID_CHOPPA, GameDefs.CAREERID_WARRIOR,
+            GameDefs.CAREERID_SQUIG_HERDER, GameDefs.CAREERID_MAGUS, GameDefs.CAREERID_SORCERER,
+            GameDefs.CAREERID_SHAMAN, GameDefs.CAREERID_ZEALOT, GameDefs.CAREERID_BLOOD_PRIEST
+        }
+    end
     scbal.num_careers = #scbal.careers
     scbal.tank_end = 3   --index of last order tank in scbal.careers
     scbal.mdps_end = 6
