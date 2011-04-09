@@ -1,3 +1,13 @@
+v1.7
+
+Update to game version 1.4.1.
+
+NOTE: I no longer play WAR. I will probably not be maintaining this
+add-on any more. If anyone wants to take it over, you can clone it
+on Curse, or you can clone it from Github:
+
+    https://github.com/tzs/WAR-ScenarioBalance
+========================================================================
 v1.5
 
 Change format of counts from, e.g.,
